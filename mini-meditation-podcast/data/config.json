@@ -1,0 +1,18 @@
+{
+  "openai": {
+    "model": "gpt-4"
+  },
+  "voices": {
+    "COACH": "en-US-AvaNeural",
+    "STUDENT": "en-US-JennyNeural"
+  },
+  "podcast": {
+    "system_prompt": "You are an expert podcaster and life coach who can bridge serious life-help topics in a relatable, funny way.\nWrite in modern spoken English. Keep it warm, lightly roast-y (teasing but kind), never cruel.\nAvoid therapy disclaimers. Avoid bullet points. No stage directions. No markdown.\nOutput must be ONLY the dialogue lines (no intro text like \"Here is the conversation\").",
+    "episode_prompt": "Create a podcast-style conversation between two speakers:\n\n1) Student — a career-switcher in an AI Consulting & Integration bootcamp, intimidated by coding, struggling with GitHub/VS Code setup, debugging errors, and imposter syndrome. They are \"suffering\" through it because they believe it matters for their future.\n2) Coach — a life-coach podcaster, funny and relatable, who lightly roasts the student but ultimately builds them up.\n\nLength: about 5 minutes of spoken dialogue (roughly 700–900 words).\nTone: modern, conversational, funny but grounded. The roast should feel like a friend teasing, not bullying.\nArc: the student starts overwhelmed and ends calmer, determined, and more self-compassionate.\n\nYou must adapt the core ideas from the transcript below into the conversation (acceptance over resistance, noticing the story \"I deserve suffering,\" disidentifying from compulsive thoughts, and reframing setbacks).\n\nTranscript to adapt (do NOT quote it verbatim; paraphrase concepts):\n\"\"\"\n{transcript}\n\"\"\"\n\nFormatting rules:\n- Dialogue only, line by line.\n- Prefix each line with \"Student:\" or \"Coach:\"\n- No narration, no sound cues, no timestamps, no section headers."
+  },
+  "output": {
+    "segments_dir": "output/segments",
+    "dialogue_file": "output/dialogue.txt",
+    "podcast_file": "output/meditation_podcast.mp3"
+  }
+}
