@@ -2,3 +2,4 @@ openai
 pydub
 python-dotenv
 tqdm
+gradio==4.31.0
