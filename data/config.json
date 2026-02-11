@@ -1,6 +1,7 @@
 {
   "openai": {
-    "model": "gpt-4"
+    "model": "gpt-4",
+    "tts_model": "tts-1"
   },
   "voices": {
     "COACH": "nova",
@@ -13,6 +14,7 @@
   "output": {
     "segments_dir": "output/segments",
     "dialogue_file": "output/dialogue.txt",
-    "podcast_file": "output/meditation_podcast.mp3"
+    "podcast_file": "output/meditation_podcast.mp3",
+    "pause_ms": 700
   }
 }

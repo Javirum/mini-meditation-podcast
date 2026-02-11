@@ -1,4 +1,7 @@
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def parse_dialogue(raw_text, voices):
@@ -22,4 +25,4 @@ def save_dialogue(lines, output_path):
     with open(output_path, "w") as f:
         for line in lines:
             f.write(f"{line['speaker']}: {line['text']}\n")
-    print(f"Dialogue saved to {output_path}")
+    logger.info("Dialogue saved to %s", output_path)

@@ -1,5 +1,3 @@
-*.csv
-*.json
 __pycache__/
 .ipynb_checkpoints/
 *.pyc
@@ -10,3 +8,5 @@ dist/
 *.tar.gz
 *.conda
 *.miniconda
+*.exe
+output/

@@ -1,4 +1,8 @@
+import logging
+
 from openai import OpenAI, APIConnectionError, RateLimitError, APIStatusError
+
+logger = logging.getLogger(__name__)
 
 
 class OpenAIClient:
