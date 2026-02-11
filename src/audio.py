@@ -14,7 +14,7 @@ def _segment_hash(text, voice, tts_model):
     return hashlib.sha256(key.encode()).hexdigest()[:16]
 
 
-def generate_segments(lines, voices, client, segments_dir, tts_model="tts-1", no_cache=False):
+def generate_segments(lines, voices, client, segments_dir, tts_model="tts-1", no_cache=False, progress_callback=None):
     """Call TTS for each dialogue line, return list of segment file paths."""
     os.makedirs(segments_dir, exist_ok=True)
     segment_files = []
@@ -45,6 +45,9 @@ def generate_segments(lines, voices, client, segments_dir, tts_model="tts-1", no
             f.write(current_hash)
 
         segment_files.append(out_file)
+
+        if progress_callback is not None:
+            progress_callback(i, len(lines))
 
     logger.info("Audio segments generated successfully.")
     return segment_files

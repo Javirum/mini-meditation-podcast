@@ -55,6 +55,7 @@ def generate_podcast(
     student_voice,
     pause_ms,
     skip_cache,
+    progress=gr.Progress(track_tqdm=True),
 ):
     status = ""
     dialogue_text = ""
@@ -64,6 +65,7 @@ def generate_podcast(
 
     try:
         # --- 1. Generate dialogue ----------------------------------------
+        progress(0.0, desc="Generating dialogue...")
         status = "Generating dialogue..."
         yield status, dialogue_text, audio_path, dialogue_file, podcast_file
 
@@ -71,6 +73,7 @@ def generate_podcast(
         client = OpenAIClient(api_key=os.getenv("OPENAI_API_KEY"))
         dialogue_text = client.generate_dialogue(gpt_model, system_prompt, episode_prompt)
 
+        progress(0.2, desc="Parsing dialogue...")
         status = "Dialogue generated. Parsing..."
         yield status, dialogue_text, audio_path, dialogue_file, podcast_file
 
@@ -82,11 +85,17 @@ def generate_podcast(
         save_dialogue(lines, dialogue_out)
         dialogue_file = dialogue_out
 
+        progress(0.25, desc="Generating audio segments...")
         status = "Generating audio segments..."
         yield status, dialogue_text, audio_path, dialogue_file, podcast_file
 
         # --- 3. Generate TTS segments ------------------------------------
         segments_dir = os.path.join(BASE_DIR, _config["output"]["segments_dir"])
+
+        def _segment_progress(current, total):
+            frac = 0.25 + 0.65 * (current / total)
+            progress(frac, desc=f"Generating segment {current}/{total}...")
+
         segment_files = generate_segments(
             lines,
             voices,
@@ -94,8 +103,10 @@ def generate_podcast(
             segments_dir,
             tts_model=tts_model,
             no_cache=skip_cache,
+            progress_callback=_segment_progress,
         )
 
+        progress(0.9, desc="Combining segments...")
         status = "Combining segments..."
         yield status, dialogue_text, audio_path, dialogue_file, podcast_file
 
@@ -105,6 +116,7 @@ def generate_podcast(
 
         audio_path = podcast_out
         podcast_file = podcast_out
+        progress(1.0, desc="Done!")
         status = "Done!"
         yield status, dialogue_text, audio_path, dialogue_file, podcast_file
 
