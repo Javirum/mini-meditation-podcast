@@ -43,3 +43,20 @@ class OpenAIClient:
             raise RuntimeError("OpenAI TTS rate limit exceeded — try again later")
         except APIStatusError as e:
             raise RuntimeError(f"OpenAI TTS error ({e.status_code}): {e.message}")
+
+    def transcribe_audio(self, audio_path):
+        try:
+            with open(audio_path, "rb") as f:
+                transcription = self._client.audio.transcriptions.create(
+                    model="whisper-1",
+                    file=f,
+                )
+            if not transcription.text:
+                raise ValueError("OpenAI returned an empty transcription")
+            return transcription.text
+        except APIConnectionError:
+            raise ConnectionError("Failed to connect to OpenAI Whisper API")
+        except RateLimitError:
+            raise RuntimeError("OpenAI Whisper rate limit exceeded — try again later")
+        except APIStatusError as e:
+            raise RuntimeError(f"OpenAI Whisper error ({e.status_code}): {e.message}")

@@ -22,6 +22,7 @@ import gradio as gr
 from src.openai_client import OpenAIClient
 from src.dialogue import parse_dialogue, save_dialogue
 from src.audio import generate_segments, combine_segments
+from src.transcript import process_upload
 
 load_dotenv()
 
@@ -113,6 +114,19 @@ def generate_podcast(
 
 
 # ---------------------------------------------------------------------------
+# File upload handler
+# ---------------------------------------------------------------------------
+def handle_upload(file):
+    if file is None:
+        return _default_transcript
+    try:
+        client = OpenAIClient(api_key=os.getenv("OPENAI_API_KEY"))
+        return process_upload(file.name, client=client)
+    except Exception as e:
+        raise gr.Error(f"Failed to process file: {e}")
+
+
+# ---------------------------------------------------------------------------
 # Gradio UI
 # ---------------------------------------------------------------------------
 with gr.Blocks(title="Mini Meditation Podcast") as demo:
@@ -121,6 +135,10 @@ with gr.Blocks(title="Mini Meditation Podcast") as demo:
     with gr.Row():
         # ---- Left column: inputs ----------------------------------------
         with gr.Column():
+            file_upload = gr.File(
+                label="Upload Transcript (txt, pdf, or audio)",
+                file_types=[".txt", ".pdf", ".mp3", ".wav", ".m4a", ".webm", ".mp4", ".ogg"],
+            )
             transcript_box = gr.Textbox(
                 label="Transcript",
                 value=_default_transcript,
@@ -175,6 +193,8 @@ with gr.Blocks(title="Mini Meditation Podcast") as demo:
             audio_player = gr.Audio(label="Podcast Audio", type="filepath")
             dialogue_download = gr.File(label="Download Dialogue")
             podcast_download = gr.File(label="Download Podcast")
+
+    file_upload.change(fn=handle_upload, inputs=[file_upload], outputs=[transcript_box])
 
     generate_btn.click(
         fn=generate_podcast,

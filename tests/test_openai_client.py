@@ -136,3 +136,50 @@ def test_speech_status_error(mock_cls):
     client = OpenAIClient("sk-test")
     with pytest.raises(RuntimeError, match="400"):
         client.generate_speech("Hi", "nova", "tts-1", "/tmp/out.mp3")
+
+
+# --- transcribe_audio ---
+
+@patch("builtins.open", new_callable=MagicMock)
+@patch("src.openai_client.OpenAI")
+def test_transcribe_returns_text(mock_cls, mock_open):
+    mock_instance = mock_cls.return_value
+    mock_instance.audio.transcriptions.create.return_value.text = "Hello from Whisper"
+    client = OpenAIClient("sk-test")
+    result = client.transcribe_audio("/tmp/audio.mp3")
+    assert result == "Hello from Whisper"
+    mock_instance.audio.transcriptions.create.assert_called_once()
+
+
+@patch("builtins.open", new_callable=MagicMock)
+@patch("src.openai_client.OpenAI")
+def test_transcribe_empty_raises(mock_cls, mock_open):
+    mock_instance = mock_cls.return_value
+    mock_instance.audio.transcriptions.create.return_value.text = ""
+    client = OpenAIClient("sk-test")
+    with pytest.raises(ValueError, match="empty transcription"):
+        client.transcribe_audio("/tmp/audio.mp3")
+
+
+@patch("builtins.open", new_callable=MagicMock)
+@patch("src.openai_client.OpenAI")
+def test_transcribe_connection_error(mock_cls, mock_open):
+    from openai import APIConnectionError
+    mock_instance = mock_cls.return_value
+    mock_instance.audio.transcriptions.create.side_effect = APIConnectionError(request=MagicMock())
+    client = OpenAIClient("sk-test")
+    with pytest.raises(ConnectionError):
+        client.transcribe_audio("/tmp/audio.mp3")
+
+
+@patch("builtins.open", new_callable=MagicMock)
+@patch("src.openai_client.OpenAI")
+def test_transcribe_rate_limit(mock_cls, mock_open):
+    from openai import RateLimitError
+    mock_instance = mock_cls.return_value
+    mock_instance.audio.transcriptions.create.side_effect = RateLimitError(
+        response=_mock_response(429), body=None, message="rate limited",
+    )
+    client = OpenAIClient("sk-test")
+    with pytest.raises(RuntimeError, match="rate limit"):
+        client.transcribe_audio("/tmp/audio.mp3")
