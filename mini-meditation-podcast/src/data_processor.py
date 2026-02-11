@@ -1,9 +1,7 @@
 import os
 import json
-import asyncio
 from dotenv import load_dotenv
-from openai import OpenAI
-import edge_tts
+from openai_client import OpenAIClient
 from pydub import AudioSegment
 
 load_dotenv()
@@ -32,15 +30,9 @@ model = config["openai"]["model"]                  # str
 
 # ── 3. Generate dialogue via OpenAI API ──────────────────────────────
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAIClient(api_key=os.getenv("OPENAI_API_KEY"))
 
-openai_response = client.responses.create(
-    model=model,
-    instructions=system_prompt,
-    input=episode_prompt,
-)
-
-dialogue_text = openai_response.output_text
+dialogue_text = client.generate_dialogue(model, system_prompt, episode_prompt)
 print(dialogue_text)
 
 # ── 4. Parse dialogue into a list of dicts ───────────────────────────
@@ -68,16 +60,20 @@ print(f"Dialogue saved to {dialogue_out}")
 
 # ── 6. Generate & combine audio ─────────────────────────────────────
 
-async def main():
+def main():
     segments_dir = os.path.join(BASE_DIR, output_paths["segments_dir"])
     os.makedirs(segments_dir, exist_ok=True)
 
-    # Generate one MP3 per dialogue line
+    # Generate one MP3 per dialogue line using OpenAI TTS
     segment_files = []
     for i, line in enumerate(lines, start=1):
         out_file = os.path.join(segments_dir, f"{i:03d}_{line['speaker']}.mp3")
-        tts = edge_tts.Communicate(text=line["text"], voice=voices[line["speaker"]])
-        await tts.save(out_file)
+        client.generate_speech(
+            text=line["text"],
+            voice=voices[line["speaker"]],
+            model="tts-1",
+            output_path=out_file,
+        )
         segment_files.append(out_file)
     print("Audio segments generated successfully.")
 
@@ -90,4 +86,4 @@ async def main():
     combined.export(podcast_out, format="mp3")
     print(f"Combined podcast saved to {podcast_out}")
 
-asyncio.run(main())
+main()
